@@ -41,6 +41,7 @@
         <p v-if="invalidInput">
           One or more input fields are invalid. Please check your provided data.
         </p>
+        <p v-if="error">{{ error }}</p>
         <div>
           <base-button>Submit</base-button>
         </div>
@@ -56,21 +57,18 @@ export default {
       enteredName: "",
       chosenRating: null,
       invalidInput: false,
+      error: null,
     };
   },
-  // emits: ["survey-submit"],
   methods: {
     submitSurvey() {
       if (this.enteredName === "" || !this.chosenRating) {
         this.invalidInput = true;
         return;
       }
-      this.invalidInput = false;
 
-      // this.$emit("survey-submit", {
-      //   userName: this.enteredName,
-      //   rating: this.chosenRating,
-      // });
+      this.invalidInput = false;
+      this.error = null;
 
       fetch(
         "https://vue-http-01-9df5d-default-rtdb.europe-west1.firebasedatabase.app/surveys.json",
@@ -82,7 +80,18 @@ export default {
             rating: this.chosenRating,
           }),
         }
-      );
+      )
+        .then((response) => {
+          if (response.ok) {
+            // ...
+          } else {
+            throw new Error("Could not save data!");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          this.error = error.message;
+        });
 
       this.enteredName = "";
       this.chosenRating = null;
